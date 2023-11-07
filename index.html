@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Raffle</title>
+
+    <script src="./bundle.js"></script>
+    <style>
+      body {
+        background-color: #f7faf9;
+        font-family: system-ui;
+      }
+      :root {
+        --md-outlined-select-text-field-container-shape: 0px;
+        --md-outlined-select-text-field-container-color: #f7faf9;
+        --md-outlined-select-text-field-input-text-color: #005353;
+        --md-outlined-select-text-field-input-text-font: system-ui;
+      }
+
+      md-outlined-select::part(menu) {
+        --md-menu-container-color: #f4fbfa;
+        --md-menu-container-shape: 0px;
+      }
+
+      .ctrlButton {
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+        width: fit-content;
+      }
+
+      .randomNumber {
+        font-family: 'Roboto Mono', monospace;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  </head>
+
+  <body>
+    <p style="display: flex;  justify-content: center; align-items: center; font-size: 5rem;">
+      <span class="randomNumber" id="randomNumber" >000000</span>
+    </p>
+    <p class="ctrlButton">
+      <md-filled-button onclick="generateNumber()" style="padding: 5px;">
+        番号を生成する
+      </md-filled-button>
+      <md-filled-button onclick="drawWinner()" style="padding: 5px;">
+        当選者を決める
+      </md-filled-button>
+    </p>
+    <p class="ctrlButton">
+    <md-filled-button onclick="showNumbers()" style="padding: 5px;">発行済みの番号</md-filled-button>
+    <md-filled-button onclick="resetNumbers()" style="padding: 5px;">履歴を削除する</md-filled-button>
+    </p>
+
+    <md-outlined-select id="raffleSelect" onchange="changeRaffle()" style="display: flex; justify-content: center; width: 10%; padding: 5px; margin: 0 auto;" label="抽選セッション" required>
+      <md-select-option value="A">
+        <div slot="headline">抽選セッション1</div>
+      </md-select-option>
+      <md-select-option value="B">
+        <div slot="headline">抽選セッション2</div>
+      </md-select-option>
+      <md-select-option value="C">
+        <div slot="headline">抽選セッション3</div>
+      </md-select-option>
+      <md-select-option value="D">
+        <div slot="headline">抽選セッション4</div>
+      </md-select-option>
+      <md-select-option value="E">
+        <div slot="headline">抽選セッション5</div>
+      </md-select-option>
+    <script>
+      window.onload = generateNumber;
+
+      let numbers = {
+        A: [],
+        B: [],
+        C: [],
+        D: [],
+        E: []
+      };
+
+      function getNumbers() {
+        let cookieValue = getCookie("numbers" + document.getElementById("raffleSelect").value);
+        if (cookieValue !== null) {
+          numbers[document.getElementById("raffleSelect").value] = cookieValue.split(",");
+        }
+      }
+
+      function showNumbers() {
+        let numbers = getNumbers();
+        if (numbers.length === 0) {
+          alert("過去に生成した番号はありません。");
+          return;
+        }
+        let message = "過去に生成した番号:\n";
+        for (let i = 0; i < numbers.length; i++) {
+          message += numbers[i] + "\n";
+        }
+        alert(message.replace(/\[|\]/g, ""));
+      }
+
+      function resetNumbers() {
+        if (confirm("このセッションで過去に生成した番号をすべて削除しますか？")) {
+          setCookie("numbers" + document.getElementById("raffleSelect").value, "", -1);
+          document.getElementById("randomNumber").textContent = "000000";
+          alert("過去に生成した番号をすべて削除しました。");
+        }
+      }
+
+      function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+          let date = new Date();
+          date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+          expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+      }
+
+      function getCookie(name) {
+        let nameEQ = name + "=";
+        let ca = document.cookie.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == " ") c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) == 0)
+            return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+      }
+
+      function generateNumber() {
+        if (document.getElementById("raffleSelect").value === "") {
+          alert("抽選セッションを選択してください。");
+          return;
+        }
+        let rNumber = Math.floor(Math.random() * 900000) + 100000;
+        numbers[document.getElementById("raffleSelect").value].push(rNumber);
+        setCookie("numbers" + document.getElementById("raffleSelect").value, JSON.stringify(numbers[document.getElementById("raffleSelect").value]), 365);
+        document.getElementById("randomNumber").textContent = rNumber;
+      }
+
+      function drawWinner() {
+        if (document.getElementById("raffleSelect").value === "") {
+          alert("抽選セッションを選択してください。");
+          return;
+        }
+        let numbersString = getCookie("numbers" + document.getElementById("raffleSelect").value);
+        if (numbersString) {
+          let numbers = JSON.parse(numbersString);
+          if (numbers.length === 0) {
+            alert("まだ数字が発行されていません。");
+            return;
+          }
+          let winnerIndex = Math.floor(Math.random() * numbers.length);
+          let winner = numbers[winnerIndex];
+          alert("当選番号は " + winner + " です！");
+        } else {
+          alert("まだ数字が発行されていません。");
+        }
+      }
+
+      function changeRaffle() {
+        document.getElementById("randomNumber").textContent = "";
+        getNumbers();
+      }
+    </script>
+  </body>
+</html>
