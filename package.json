@@ -2,7 +2,7 @@
   "dependencies": {
     "@material/web": "^1.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "rollup": "^4.3.0"
+    "rollup": "^4.22.5"
   },
   "scripts": {
     "build": "npx rollup -p @rollup/plugin-node-resolve mdesign.js -o bundle.js"
